@@ -1,4 +1,3 @@
 [
-  { "source": "ma_1", "target": "ph_1" },
-  { "source": "cn_1", "target": "po_1" }
+  { "source": "math_01", "target": "physics_01" }
 ]
