@@ -5,268 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API 中转站测试工具</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: #0f0f23;
             color: #e0e0e0;
             min-height: 100vh;
         }
-
-        .container {
-            max-width: 920px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
+        .container { max-width: 920px; margin: 0 auto; padding: 20px; }
         h1 {
-            text-align: center;
-            padding: 30px 0 10px;
-            font-size: 28px;
+            text-align: center; padding: 30px 0 10px; font-size: 28px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
         }
-
-        .subtitle {
-            text-align: center;
-            color: #888;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
+        .subtitle { text-align: center; color: #888; margin-bottom: 30px; font-size: 14px; }
 
         .config-panel {
-            background: #1a1a2e;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px;
-            border: 1px solid #2a2a4a;
+            background: #1a1a2e; border-radius: 16px; padding: 24px;
+            margin-bottom: 20px; border: 1px solid #2a2a4a;
         }
-
         .config-panel h2 {
-            font-size: 18px;
-            margin-bottom: 16px;
-            color: #a0a0cc;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 18px; margin-bottom: 16px; color: #a0a0cc;
+            display: flex; align-items: center; gap: 8px;
         }
+        .config-panel h2::before { content: '⚙️'; }
 
-        .config-panel h2::before {
-            content: '⚙️';
-        }
-
-        .form-row {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-
-        .form-group {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 13px;
-            color: #999;
-            font-weight: 500;
-        }
-
-        .form-group input,
-        .form-group select {
-            width: 100%;
-            padding: 10px 14px;
-            background: #0f0f23;
-            border: 1px solid #333366;
-            border-radius: 8px;
-            color: #e0e0e0;
-            font-size: 14px;
+        .form-row { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+        .form-group { flex: 1; min-width: 200px; }
+        .form-group label { display: block; margin-bottom: 6px; font-size: 13px; color: #999; font-weight: 500; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px 14px; background: #0f0f23;
+            border: 1px solid #333366; border-radius: 8px; color: #e0e0e0; font-size: 14px;
             transition: border-color 0.3s;
         }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        .form-group input:focus, .form-group select:focus {
+            outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
         }
+        .form-group input::placeholder { color: #555; }
 
-        .form-group input::placeholder {
-            color: #555;
-        }
-
-        .provider-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-        }
-
+        .provider-tabs { display: flex; gap: 10px; margin-bottom: 16px; }
         .provider-tab {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #2a2a4a;
-            border-radius: 12px;
-            background: #0f0f23;
-            color: #888;
-            cursor: pointer;
-            text-align: center;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s;
-            user-select: none;
+            flex: 1; padding: 12px; border: 2px solid #2a2a4a; border-radius: 12px;
+            background: #0f0f23; color: #888; cursor: pointer; text-align: center;
+            font-size: 14px; font-weight: 600; transition: all 0.3s; user-select: none;
         }
-
-        .provider-tab:hover {
-            border-color: #444;
-        }
-
-        .provider-tab.active-openai {
-            border-color: #10a37f;
-            background: rgba(16, 163, 127, 0.1);
-            color: #10a37f;
-        }
-
-        .provider-tab.active-claude {
-            border-color: #d97706;
-            background: rgba(217, 119, 6, 0.1);
-            color: #d97706;
-        }
-
-        .provider-tab.active-nvidia {
-            border-color: #76b900;
-            background: rgba(118, 185, 0, 0.1);
-            color: #76b900;
-        }
+        .provider-tab:hover { border-color: #444; }
+        .provider-tab.active-openai { border-color: #10a37f; background: rgba(16,163,127,0.1); color: #10a37f; }
+        .provider-tab.active-claude { border-color: #d97706; background: rgba(217,119,6,0.1); color: #d97706; }
+        .provider-tab.active-nvidia { border-color: #76b900; background: rgba(118,185,0,0.1); color: #76b900; }
 
         .chat-panel {
-            background: #1a1a2e;
-            border-radius: 16px;
-            border: 1px solid #2a2a4a;
-            overflow: hidden;
+            background: #1a1a2e; border-radius: 16px; border: 1px solid #2a2a4a; overflow: hidden;
         }
-
         .chat-header {
-            padding: 16px 24px;
-            border-bottom: 1px solid #2a2a4a;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 16px 24px; border-bottom: 1px solid #2a2a4a;
+            display: flex; justify-content: space-between; align-items: center;
         }
-
-        .chat-header h2 {
-            font-size: 18px;
-            color: #a0a0cc;
-        }
-
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-ready {
-            background: rgba(16, 163, 127, 0.15);
-            color: #10a37f;
-        }
-
-        .status-error {
-            background: rgba(239, 68, 68, 0.15);
-            color: #ef4444;
-        }
-
-        .status-loading {
-            background: rgba(234, 179, 8, 0.15);
-            color: #eab308;
-        }
+        .chat-header h2 { font-size: 18px; color: #a0a0cc; }
+        .status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .status-ready { background: rgba(16,163,127,0.15); color: #10a37f; }
+        .status-error { background: rgba(239,68,68,0.15); color: #ef4444; }
+        .status-loading { background: rgba(234,179,8,0.15); color: #eab308; }
 
         .chat-messages {
-            height: 420px;
-            overflow-y: auto;
-            padding: 20px 24px;
-            scroll-behavior: smooth;
+            height: 420px; overflow-y: auto; padding: 20px 24px; scroll-behavior: smooth;
         }
+        .chat-messages::-webkit-scrollbar { width: 6px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 
-        .chat-messages::-webkit-scrollbar {
-            width: 6px;
-        }
+        .message { margin-bottom: 20px; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
-        .chat-messages::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .chat-messages::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 3px;
-        }
-
-        .message {
-            margin-bottom: 20px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .message-header {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
+        .message-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
         .message-avatar {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: bold;
-            flex-shrink: 0;
+            width: 28px; height: 28px; border-radius: 6px; display: flex;
+            align-items: center; justify-content: center; font-size: 14px; font-weight: bold; flex-shrink: 0;
         }
-
         .avatar-user { background: #667eea; color: white; }
         .avatar-openai { background: #10a37f; color: white; }
         .avatar-claude { background: #d97706; color: white; }
         .avatar-nvidia { background: #76b900; color: white; }
         .avatar-error { background: #ef4444; color: white; }
 
-        .message-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: #aaa;
-        }
-
-        .message-time {
-            font-size: 11px;
-            color: #555;
-            margin-left: auto;
-        }
-
+        .message-name { font-size: 13px; font-weight: 600; color: #aaa; }
+        .message-time { font-size: 11px; color: #555; margin-left: auto; }
         .message-content {
-            margin-left: 36px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-size: 14px;
-            line-height: 1.7;
-            white-space: pre-wrap;
-            word-break: break-word;
+            margin-left: 36px; padding: 12px 16px; border-radius: 12px;
+            font-size: 14px; line-height: 1.7; white-space: pre-wrap; word-break: break-word;
         }
-
         .content-user { background: #252547; color: #d0d0f0; }
         .content-openai { background: #162016; color: #c0e0c0; border: 1px solid #1a3a1a; }
         .content-claude { background: #2a1f10; color: #e0d0b0; border: 1px solid #3a2a1a; }
@@ -274,261 +101,119 @@
         .content-error { background: #2a1015; color: #f0a0a0; border: 1px solid #3a1520; }
 
         .empty-chat {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #555;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; height: 100%; color: #555;
         }
-
         .empty-chat .icon { font-size: 48px; margin-bottom: 16px; }
         .empty-chat p { font-size: 14px; }
 
         .chat-input-area {
-            padding: 16px 24px;
-            border-top: 1px solid #2a2a4a;
-            display: flex;
-            gap: 12px;
-            align-items: flex-end;
+            padding: 16px 24px; border-top: 1px solid #2a2a4a;
+            display: flex; gap: 12px; align-items: flex-end;
         }
-
         .chat-input-area textarea {
-            flex: 1;
-            padding: 12px 16px;
-            background: #0f0f23;
-            border: 1px solid #333366;
-            border-radius: 12px;
-            color: #e0e0e0;
-            font-size: 14px;
-            font-family: inherit;
-            resize: none;
-            min-height: 48px;
-            max-height: 150px;
-            transition: border-color 0.3s;
+            flex: 1; padding: 12px 16px; background: #0f0f23; border: 1px solid #333366;
+            border-radius: 12px; color: #e0e0e0; font-size: 14px; font-family: inherit;
+            resize: none; min-height: 48px; max-height: 150px; transition: border-color 0.3s;
         }
-
-        .chat-input-area textarea:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
+        .chat-input-area textarea:focus { outline: none; border-color: #667eea; }
         .chat-input-area textarea::placeholder { color: #555; }
 
         .btn-send {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            white-space: nowrap;
-            min-width: 72px;
+            padding: 12px 24px; background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white; border: none; border-radius: 12px; font-size: 14px;
+            font-weight: 600; cursor: pointer; transition: all 0.3s; white-space: nowrap; min-width: 72px;
         }
-
-        .btn-send:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+        .btn-send:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(102,126,234,0.4); }
         .btn-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
-
-        .btn-send.btn-stop {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-        }
+        .btn-send.btn-stop { background: linear-gradient(135deg, #ef4444, #dc2626); }
 
         .btn-clear {
-            padding: 12px 16px;
-            background: #2a2a4a;
-            color: #aaa;
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
+            padding: 12px 16px; background: #2a2a4a; color: #aaa; border: none;
+            border-radius: 12px; font-size: 14px; cursor: pointer; transition: all 0.3s;
         }
-
         .btn-clear:hover { background: #3a3a5a; color: #ddd; }
 
-        .quick-tests {
-            display: flex;
-            gap: 8px;
-            padding: 0 24px 12px;
-            flex-wrap: wrap;
-        }
-
+        .quick-tests { display: flex; gap: 8px; padding: 0 24px 12px; flex-wrap: wrap; }
         .quick-test-btn {
-            padding: 6px 14px;
-            background: #252547;
-            border: 1px solid #333366;
-            border-radius: 20px;
-            color: #9999cc;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
+            padding: 6px 14px; background: #252547; border: 1px solid #333366;
+            border-radius: 20px; color: #9999cc; font-size: 12px; cursor: pointer; transition: all 0.3s;
         }
-
         .quick-test-btn:hover { background: #333366; color: #ccccff; }
 
-        .typing-indicator {
-            display: inline-flex;
-            gap: 4px;
-            padding: 4px 0;
-        }
-
+        .typing-indicator { display: inline-flex; gap: 4px; padding: 4px 0; }
         .typing-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #667eea;
+            width: 8px; height: 8px; border-radius: 50%; background: #667eea;
             animation: bounce 1.4s infinite ease-in-out;
         }
-
         .typing-dot:nth-child(1) { animation-delay: -0.32s; }
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
+        @keyframes bounce { 0%,80%,100% { transform:scale(0); } 40% { transform:scale(1); } }
 
         .info-panel {
-            margin-top: 20px;
-            padding: 16px 20px;
-            background: #1a1a2e;
-            border-radius: 12px;
-            border: 1px solid #2a2a4a;
-            font-size: 12px;
-            color: #666;
+            margin-top: 20px; padding: 16px 20px; background: #1a1a2e;
+            border-radius: 12px; border: 1px solid #2a2a4a; font-size: 12px; color: #666;
         }
-
-        .info-panel summary {
-            cursor: pointer;
-            color: #888;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
+        .info-panel summary { cursor: pointer; color: #888; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
         .info-panel pre {
-            background: #0f0f23;
-            padding: 12px;
-            border-radius: 8px;
-            overflow-x: auto;
-            font-size: 12px;
-            color: #888;
-            margin-top: 8px;
-            white-space: pre-wrap;
-            word-break: break-all;
-            max-height: 400px;
-            overflow-y: auto;
+            background: #0f0f23; padding: 12px; border-radius: 8px; overflow-x: auto;
+            font-size: 12px; color: #888; margin-top: 8px; white-space: pre-wrap;
+            word-break: break-all; max-height: 400px; overflow-y: auto;
         }
 
-        .options-row {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-            margin-top: 12px;
-            flex-wrap: wrap;
-        }
-
-        .toggle-switch {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: #888;
-        }
-
+        .options-row { display: flex; gap: 20px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+        .toggle-switch { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #888; }
         .toggle-switch input[type="checkbox"] {
-            appearance: none;
-            -webkit-appearance: none;
-            width: 36px;
-            height: 20px;
-            background: #333;
-            border-radius: 10px;
-            position: relative;
-            cursor: pointer;
-            transition: background 0.3s;
+            appearance: none; -webkit-appearance: none; width: 36px; height: 20px;
+            background: #333; border-radius: 10px; position: relative; cursor: pointer; transition: background 0.3s;
         }
-
         .toggle-switch input[type="checkbox"]::after {
-            content: '';
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            background: white;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: transform 0.3s;
+            content: ''; position: absolute; width: 16px; height: 16px; background: white;
+            border-radius: 50%; top: 2px; left: 2px; transition: transform 0.3s;
         }
-
         .toggle-switch input[type="checkbox"]:checked { background: #667eea; }
         .toggle-switch input[type="checkbox"]:checked::after { transform: translateX(16px); }
 
-        .param-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
-            color: #888;
-        }
-
-        .param-item input[type="range"] {
-            width: 80px;
-            accent-color: #667eea;
-        }
-
+        .param-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #888; }
+        .param-item input[type="range"] { width: 80px; accent-color: #667eea; }
         .param-item input[type="number"] {
-            width: 70px;
-            padding: 4px 8px;
-            background: #0f0f23;
-            border: 1px solid #333366;
-            border-radius: 6px;
-            color: #e0e0e0;
-            font-size: 12px;
+            width: 70px; padding: 4px 8px; background: #0f0f23; border: 1px solid #333366;
+            border-radius: 6px; color: #e0e0e0; font-size: 12px;
         }
 
-        .key-toggle {
-            position: relative;
-        }
-
+        .key-toggle { position: relative; }
         .key-toggle .eye-btn {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #666;
-            cursor: pointer;
-            font-size: 16px;
-            padding: 2px;
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: #666; cursor: pointer; font-size: 16px; padding: 2px;
         }
-
         .key-toggle .eye-btn:hover { color: #aaa; }
 
         .test-conn-btn {
-            padding: 8px 16px;
-            background: #252547;
-            border: 1px solid #667eea;
-            border-radius: 8px;
-            color: #667eea;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.3s;
-            white-space: nowrap;
+            padding: 8px 16px; background: #252547; border: 1px solid #667eea;
+            border-radius: 8px; color: #667eea; font-size: 13px; cursor: pointer;
+            transition: all 0.3s; white-space: nowrap;
+        }
+        .test-conn-btn:hover { background: rgba(102,126,234,0.15); }
+
+        .response-meta { margin-left: 36px; margin-top: 4px; font-size: 11px; color: #555; }
+
+        .cors-tip {
+            margin-top: 12px; padding: 10px 14px; background: rgba(234,179,8,0.08);
+            border: 1px solid rgba(234,179,8,0.2); border-radius: 8px;
+            font-size: 12px; color: #c9a020; line-height: 1.6;
+        }
+        .cors-tip summary { cursor: pointer; font-weight: 600; }
+        .cors-tip code {
+            background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 3px; font-size: 11px;
         }
 
-        .test-conn-btn:hover {
-            background: rgba(102, 126, 234, 0.15);
+        .proxy-row {
+            display: flex; gap: 12px; align-items: center; margin-top: 12px; flex-wrap: wrap;
         }
-
-        .response-meta {
-            margin-left: 36px;
-            margin-top: 4px;
-            font-size: 11px;
-            color: #555;
+        .proxy-label { font-size: 13px; color: #999; white-space: nowrap; }
+        .proxy-row select {
+            padding: 6px 10px; background: #0f0f23; border: 1px solid #333366;
+            border-radius: 6px; color: #e0e0e0; font-size: 13px;
         }
     </style>
 </head>
@@ -541,15 +226,9 @@
             <h2>连接配置</h2>
 
             <div class="provider-tabs">
-                <div class="provider-tab active-openai" id="tab-openai" onclick="switchProvider('openai')">
-                    🟢 OpenAI (GPT)
-                </div>
-                <div class="provider-tab" id="tab-claude" onclick="switchProvider('claude')">
-                    🟠 Claude
-                </div>
-                <div class="provider-tab" id="tab-nvidia" onclick="switchProvider('nvidia')">
-                    🟢 NVIDIA NIM
-                </div>
+                <div class="provider-tab active-openai" id="tab-openai" onclick="switchProvider('openai')">🟢 OpenAI (GPT)</div>
+                <div class="provider-tab" id="tab-claude" onclick="switchProvider('claude')">🟠 Claude</div>
+                <div class="provider-tab" id="tab-nvidia" onclick="switchProvider('nvidia')">🟢 NVIDIA NIM</div>
             </div>
 
             <div class="form-row">
@@ -575,14 +254,14 @@
                     <label>自定义模型名（可选，优先使用）</label>
                     <input type="text" id="customModel" placeholder="留空则使用左侧选择">
                 </div>
-                <div class="form-group" style="flex: 0; min-width: auto; display: flex; align-items: flex-end;">
+                <div class="form-group" style="flex:0; min-width:auto; display:flex; align-items:flex-end;">
                     <button class="test-conn-btn" onclick="testConnection()">🔍 测试连接</button>
                 </div>
             </div>
 
             <div class="options-row">
                 <div class="toggle-switch">
-                    <input type="checkbox" id="streamToggle" checked>
+                    <input type="checkbox" id="streamToggle">
                     <label for="streamToggle">流式输出</label>
                 </div>
                 <div class="param-item">
@@ -594,6 +273,32 @@
                     <label>Max Tokens:</label>
                     <input type="number" id="maxTokens" value="2048" min="1" max="128000">
                 </div>
+            </div>
+
+            <div class="proxy-row">
+                <span class="proxy-label">🌐 CORS 代理:</span>
+                <select id="proxyMode">
+                    <option value="none">不使用代理（直连）</option>
+                    <option value="corsproxy">corsproxy.io</option>
+                    <option value="allorigins">allorigins.win</option>
+                    <option value="custom">自定义代理前缀</option>
+                </select>
+                <input type="text" id="customProxy" placeholder="自定义代理URL前缀" style="display:none; flex:1; min-width:200px; padding:6px 10px; background:#0f0f23; border:1px solid #333366; border-radius:6px; color:#e0e0e0; font-size:13px;">
+            </div>
+
+            <div class="cors-tip">
+                <details>
+                    <summary>⚠️ 遇到连接失败 / 无响应？点击查看解决方案</summary>
+                    <p style="margin-top:8px;">
+                        <strong>问题原因：</strong>浏览器的 CORS 安全策略阻止了跨域请求。本地 HTML 文件请求外部 API 时，如果服务端没有返回 <code>Access-Control-Allow-Origin</code> 头，请求会被拦截。
+                    </p>
+                    <p style="margin-top:6px;"><strong>解决方案（任选其一）：</strong></p>
+                    <p>1️⃣ 上方选择一个 <strong>CORS 代理</strong>（推荐先试 corsproxy.io）</p>
+                    <p>2️⃣ 安装浏览器插件：<code>CORS Unblock</code> 或 <code>Allow CORS</code></p>
+                    <p>3️⃣ 用命令行启动无安全限制的 Chrome：<br>
+                    <code>chrome --disable-web-security --user-data-dir=/tmp/chrome_dev</code></p>
+                    <p>4️⃣ 确认你的中转站 URL 是否正确（OpenAI 格式一般需要以 <code>/v1</code> 结尾）</p>
+                </details>
             </div>
         </div>
 
@@ -608,7 +313,7 @@
                 <button class="quick-test-btn" onclick="quickTest('1+1等于多少？')">🔢 简单数学</button>
                 <button class="quick-test-btn" onclick="quickTest('用Python写一个快速排序。')">💻 写代码</button>
                 <button class="quick-test-btn" onclick="quickTest('请用中文写一首关于春天的五言绝句。')">📝 写诗</button>
-                <button class="quick-test-btn" onclick="quickTest('What model are you? Please tell me your exact model name/version.')">🤖 识别模型</button>
+                <button class="quick-test-btn" onclick="quickTest('What model are you? Tell me your exact model name/version.')">🤖 识别模型</button>
             </div>
 
             <div class="chat-messages" id="chatMessages">
@@ -619,14 +324,14 @@
             </div>
 
             <div class="chat-input-area">
-                <textarea id="userInput" placeholder="输入问题... (Ctrl+Enter / Enter 发送)" rows="1" oninput="autoResize(this)"></textarea>
+                <textarea id="userInput" placeholder="输入问题... (Enter 发送, Shift+Enter 换行)" rows="1" oninput="autoResize(this)"></textarea>
                 <button class="btn-clear" onclick="clearChat()">清空</button>
                 <button class="btn-send" id="sendBtn" onclick="sendMessage()">发送</button>
             </div>
         </div>
 
         <div class="info-panel">
-            <details>
+            <details id="debugDetails">
                 <summary>📋 调试日志（点击展开查看完整请求/响应）</summary>
                 <pre id="debugLog">等待请求...</pre>
             </details>
@@ -638,6 +343,7 @@
         let chatHistory = [];
         let isLoading = false;
         let currentController = null;
+        let msgIdCounter = 0;
 
         const modelOptions = {
             openai: [
@@ -659,7 +365,6 @@
                 { value: 'claude-3-5-sonnet-20241022', label: 'claude-3.5-sonnet' },
                 { value: 'claude-3-5-haiku-20241022', label: 'claude-3.5-haiku' },
                 { value: 'claude-3-opus-20240229', label: 'claude-3-opus' },
-                { value: 'claude-3-sonnet-20240229', label: 'claude-3-sonnet' },
                 { value: 'claude-3-haiku-20240307', label: 'claude-3-haiku' },
             ],
             nvidia: [
@@ -669,7 +374,6 @@
                 { value: 'meta/llama-3.1-8b-instruct', label: 'Llama 3.1 8B' },
                 { value: 'google/gemma-2-27b-it', label: 'Gemma 2 27B' },
                 { value: 'mistralai/mistral-large-2-instruct', label: 'Mistral Large 2' },
-                { value: 'mistralai/mixtral-8x22b-instruct-v0.1', label: 'Mixtral 8x22B' },
                 { value: 'nvidia/nemotron-4-340b-instruct', label: 'Nemotron-4 340B' },
                 { value: 'deepseek-ai/deepseek-r1', label: 'DeepSeek R1' },
                 { value: 'qwen/qwen2.5-72b-instruct', label: 'Qwen 2.5 72B' },
@@ -682,297 +386,238 @@
             nvidia: 'https://integrate.api.nvidia.com/v1'
         };
 
-        const providerLabels = {
-            openai: 'GPT',
-            claude: 'Claude',
-            nvidia: 'NVIDIA'
-        };
+        const providerLabels = { openai: 'GPT', claude: 'Claude', nvidia: 'NVIDIA' };
 
         // 初始化
         switchProvider('openai');
 
+        // 代理模式切换
+        document.getElementById('proxyMode').addEventListener('change', function() {
+            document.getElementById('customProxy').style.display = this.value === 'custom' ? 'block' : 'none';
+        });
+
         function switchProvider(provider) {
             currentProvider = provider;
-
-            document.querySelectorAll('.provider-tab').forEach(tab => tab.className = 'provider-tab');
+            document.querySelectorAll('.provider-tab').forEach(t => t.className = 'provider-tab');
             document.getElementById('tab-' + provider).className = 'provider-tab active-' + provider;
-
-            // 更新模型列表
             const select = document.getElementById('model');
-            select.innerHTML = modelOptions[provider].map(m =>
-                `<option value="${m.value}">${m.label}</option>`
-            ).join('');
-
-            // 更新 placeholder
-            const urlInput = document.getElementById('baseUrl');
-            urlInput.placeholder = `默认: ${defaultUrls[provider]}`;
-
-            // Claude 提示
+            select.innerHTML = modelOptions[provider].map(m => `<option value="${m.value}">${m.label}</option>`).join('');
             if (provider === 'claude') {
-                urlInput.placeholder = '例如: https://your-proxy.com （不要加 /v1/messages）';
+                document.getElementById('baseUrl').placeholder = '例如: https://your-proxy.com （不加 /v1/messages）';
             } else {
-                urlInput.placeholder = `例如: https://your-proxy.com/v1 （需含 /v1）`;
+                document.getElementById('baseUrl').placeholder = `例如: https://your-proxy.com/v1 （需含 /v1）`;
             }
         }
 
-        document.getElementById('temperature').addEventListener('input', function () {
+        document.getElementById('temperature').addEventListener('input', function() {
             document.getElementById('tempValue').textContent = this.value;
         });
 
-        function autoResize(textarea) {
-            textarea.style.height = 'auto';
-            textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
-        }
+        function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 150) + 'px'; }
 
-        document.getElementById('userInput').addEventListener('keydown', function (e) {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                e.preventDefault();
-                sendMessage();
-            }
-            // 也支持单独 Enter（非 Shift+Enter）
-            if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
-                e.preventDefault();
-                sendMessage();
-            }
+        document.getElementById('userInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
         });
 
         function toggleKeyVisibility() {
-            const input = document.getElementById('apiKey');
+            const inp = document.getElementById('apiKey');
             const btn = document.getElementById('eyeBtn');
-            if (input.type === 'password') {
-                input.type = 'text';
-                btn.textContent = '🙈';
-            } else {
-                input.type = 'password';
-                btn.textContent = '👁';
-            }
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+            btn.textContent = inp.type === 'password' ? '👁' : '🙈';
         }
 
         function setStatus(type, text) {
-            const badge = document.getElementById('statusBadge');
-            badge.className = 'status-badge status-' + type;
-            badge.textContent = text;
+            const b = document.getElementById('statusBadge');
+            b.className = 'status-badge status-' + type; b.textContent = text;
         }
 
         function appendLog(text) {
             const log = document.getElementById('debugLog');
-            const timestamp = new Date().toLocaleTimeString();
-            log.textContent += `\n[${timestamp}] ${text}`;
+            log.textContent += `\n[${new Date().toLocaleTimeString()}] ${text}`;
             log.scrollTop = log.scrollHeight;
-        }
-
-        function clearLog() {
-            document.getElementById('debugLog').textContent = '';
         }
 
         function clearChat() {
             chatHistory = [];
-            document.getElementById('chatMessages').innerHTML = `
-                <div class="empty-chat" id="emptyChat">
-                    <div class="icon">🚀</div>
-                    <p>填写配置后发送消息开始测试</p>
-                </div>
-            `;
+            document.getElementById('chatMessages').innerHTML = '<div class="empty-chat" id="emptyChat"><div class="icon">🚀</div><p>填写配置后发送消息开始测试</p></div>';
         }
 
-        function nowTime() {
-            return new Date().toLocaleTimeString();
-        }
+        function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+        function nowTime() { return new Date().toLocaleTimeString(); }
+        function getApiKey() { return document.getElementById('apiKey').value.trim(); }
+        function getModel() { return document.getElementById('customModel').value.trim() || document.getElementById('model').value; }
+        function getBaseUrl() { return document.getElementById('baseUrl').value.trim() || defaultUrls[currentProvider]; }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function getBaseUrl() {
-            return document.getElementById('baseUrl').value.trim() || defaultUrls[currentProvider];
-        }
-
-        function getApiKey() {
-            return document.getElementById('apiKey').value.trim();
-        }
-
-        function getModel() {
-            return document.getElementById('customModel').value.trim() || document.getElementById('model').value;
-        }
-
-        // 添加用户消息到界面
-        function addUserMessage(content) {
-            const container = document.getElementById('chatMessages');
-            const empty = document.getElementById('emptyChat');
-            if (empty) empty.remove();
-
-            const msg = document.createElement('div');
-            msg.className = 'message';
-            msg.innerHTML = `
-                <div class="message-header">
-                    <div class="message-avatar avatar-user">你</div>
-                    <span class="message-name">你</span>
-                    <span class="message-time">${nowTime()}</span>
-                </div>
-                <div class="message-content content-user">${escapeHtml(content)}</div>
-            `;
-            container.appendChild(msg);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        // 添加AI回复到界面（支持流式更新）
-        function addAIMessage() {
-            const container = document.getElementById('chatMessages');
-            const avatarClass = 'avatar-' + currentProvider;
-            const contentClass = 'content-' + currentProvider;
-            const label = providerLabels[currentProvider];
-            const avatarChar = label[0];
-
-            const msg = document.createElement('div');
-            msg.className = 'message';
-            msg.innerHTML = `
-                <div class="message-header">
-                    <div class="message-avatar ${avatarClass}">${avatarChar}</div>
-                    <span class="message-name">${label}</span>
-                    <span class="message-time">${nowTime()}</span>
-                </div>
-                <div class="message-content ${contentClass}" id="ai-content-live">
-                    <div class="typing-indicator">
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                        <div class="typing-dot"></div>
-                    </div>
-                </div>
-            `;
-            container.appendChild(msg);
-            container.scrollTop = container.scrollHeight;
-            return document.getElementById('ai-content-live');
-        }
-
-        function updateAIContent(el, text) {
-            if (!el) return;
-            el.textContent = text || '(空响应)';
-            const container = document.getElementById('chatMessages');
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function finalizeAIContent(el, text, meta) {
-            if (!el) return;
-            el.removeAttribute('id');
-            el.textContent = text || '(空响应)';
-
-            if (meta) {
-                const metaDiv = document.createElement('div');
-                metaDiv.className = 'response-meta';
-                metaDiv.textContent = meta;
-                el.parentElement.appendChild(metaDiv);
+        // ============ CORS 代理包装 ============
+        function wrapUrlWithProxy(url) {
+            const mode = document.getElementById('proxyMode').value;
+            switch (mode) {
+                case 'corsproxy':
+                    return 'https://corsproxy.io/?' + encodeURIComponent(url);
+                case 'allorigins':
+                    // allorigins 不适合 POST，改用 cors-anywhere 风格
+                    return 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+                case 'custom':
+                    const prefix = document.getElementById('customProxy').value.trim().replace(/\/+$/, '');
+                    return prefix ? prefix + '/' + url : url;
+                default:
+                    return url;
             }
         }
 
+        // ============ 通用 fetch 封装 ============
+        async function apiFetch(url, options) {
+            const proxyUrl = wrapUrlWithProxy(url);
+            appendLog(`实际请求URL: ${proxyUrl}`);
+
+            // 先尝试直接请求
+            try {
+                const resp = await fetch(proxyUrl, options);
+                return resp;
+            } catch (err) {
+                if (err.name === 'AbortError') throw err;
+
+                // 如果没用代理，直连失败，自动尝试 corsproxy
+                const mode = document.getElementById('proxyMode').value;
+                if (mode === 'none') {
+                    appendLog(`⚠️ 直连失败 (${err.message})，自动尝试 corsproxy.io 代理...`);
+                    const fallbackUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+                    appendLog(`代理URL: ${fallbackUrl}`);
+                    try {
+                        const resp = await fetch(fallbackUrl, options);
+                        appendLog('✅ 通过 corsproxy.io 代理请求成功');
+                        return resp;
+                    } catch (err2) {
+                        if (err2.name === 'AbortError') throw err2;
+                        appendLog(`❌ 代理也失败: ${err2.message}`);
+                        throw new Error(`直连和代理均失败。\n直连错误: ${err.message}\n代理错误: ${err2.message}\n\n请尝试：\n1. 在上方选择 CORS 代理\n2. 安装浏览器 CORS 插件\n3. 检查 URL 是否正确`);
+                    }
+                }
+                throw err;
+            }
+        }
+
+        // ============ UI 消息操作 ============
+        function removeEmpty() {
+            const e = document.getElementById('emptyChat'); if (e) e.remove();
+        }
+
+        function addUserMessage(content) {
+            removeEmpty();
+            const c = document.getElementById('chatMessages');
+            const d = document.createElement('div');
+            d.className = 'message';
+            d.innerHTML = `<div class="message-header"><div class="message-avatar avatar-user">你</div><span class="message-name">你</span><span class="message-time">${nowTime()}</span></div><div class="message-content content-user">${escapeHtml(content)}</div>`;
+            c.appendChild(d); c.scrollTop = c.scrollHeight;
+        }
+
+        function createAIBubble() {
+            removeEmpty();
+            const c = document.getElementById('chatMessages');
+            const id = 'ai-msg-' + (++msgIdCounter);
+            const p = currentProvider;
+            const d = document.createElement('div');
+            d.className = 'message';
+            d.innerHTML = `<div class="message-header"><div class="message-avatar avatar-${p}">${providerLabels[p][0]}</div><span class="message-name">${providerLabels[p]}</span><span class="message-time">${nowTime()}</span></div><div class="message-content content-${p}" id="${id}"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div></div>`;
+            c.appendChild(d); c.scrollTop = c.scrollHeight;
+            return id;
+        }
+
+        function updateBubble(id, text) {
+            const el = document.getElementById(id);
+            if (el) { el.textContent = text || ''; document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight; }
+        }
+
+        function finalizeBubble(id, text, meta) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.textContent = text || '(空响应)';
+                el.removeAttribute('id');
+                if (meta) {
+                    const m = document.createElement('div');
+                    m.className = 'response-meta'; m.textContent = meta;
+                    el.parentElement.appendChild(m);
+                }
+            }
+        }
+
+        function removeBubble(id) {
+            const el = document.getElementById(id);
+            if (el && el.parentElement) el.parentElement.remove();
+        }
+
         function addErrorMessage(content) {
-            const container = document.getElementById('chatMessages');
-            const empty = document.getElementById('emptyChat');
-            if (empty) empty.remove();
-
-            const msg = document.createElement('div');
-            msg.className = 'message';
-            msg.innerHTML = `
-                <div class="message-header">
-                    <div class="message-avatar avatar-error">✕</div>
-                    <span class="message-name">错误</span>
-                    <span class="message-time">${nowTime()}</span>
-                </div>
-                <div class="message-content content-error">${escapeHtml(content)}</div>
-            `;
-            container.appendChild(msg);
-            container.scrollTop = container.scrollHeight;
+            removeEmpty();
+            const c = document.getElementById('chatMessages');
+            const d = document.createElement('div');
+            d.className = 'message';
+            d.innerHTML = `<div class="message-header"><div class="message-avatar avatar-error">✕</div><span class="message-name">错误</span><span class="message-time">${nowTime()}</span></div><div class="message-content content-error">${escapeHtml(content)}</div>`;
+            c.appendChild(d); c.scrollTop = c.scrollHeight;
         }
 
-        function quickTest(question) {
-            document.getElementById('userInput').value = question;
-            autoResize(document.getElementById('userInput'));
-            sendMessage();
-        }
+        function quickTest(q) { document.getElementById('userInput').value = q; autoResize(document.getElementById('userInput')); sendMessage(); }
 
-        // 测试连接（列出模型）
+        // ============ 测试连接 ============
         async function testConnection() {
-            const baseUrl = getBaseUrl();
             const apiKey = getApiKey();
             if (!apiKey) { alert('请先填写 API Key'); return; }
-
-            clearLog();
+            const baseUrl = getBaseUrl();
+            document.getElementById('debugLog').textContent = '';
             setStatus('loading', '测试中...');
+            document.getElementById('debugDetails').open = true;
 
             try {
-                let url;
-                let headers;
-
                 if (currentProvider === 'claude') {
-                    // Claude: GET /v1/models 或尝试发一条简单消息
-                    url = baseUrl.replace(/\/+$/, '') + '/v1/messages';
-                    headers = {
-                        'Content-Type': 'application/json',
-                        'x-api-key': apiKey,
-                        'anthropic-version': '2023-06-01',
-                        'Authorization': `Bearer ${apiKey}`
-                    };
-                    appendLog(`测试 Claude 连接: POST ${url}`);
-                    const resp = await fetch(url, {
+                    const url = baseUrl.replace(/\/+$/, '') + '/v1/messages';
+                    appendLog(`POST ${url}`);
+                    const resp = await apiFetch(url, {
                         method: 'POST',
-                        headers,
-                        body: JSON.stringify({
-                            model: getModel(),
-                            max_tokens: 32,
-                            messages: [{ role: 'user', content: 'Hi' }]
-                        })
+                        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'Authorization': `Bearer ${apiKey}` },
+                        body: JSON.stringify({ model: getModel(), max_tokens: 16, messages: [{ role: 'user', content: 'Hi' }] })
                     });
-                    const data = await resp.text();
-                    appendLog(`状态: ${resp.status}`);
-                    appendLog(`响应: ${data}`);
-                    if (resp.ok) {
-                        setStatus('ready', '✅ 连接成功');
-                    } else {
-                        setStatus('error', `❌ HTTP ${resp.status}`);
-                    }
+                    const text = await resp.text();
+                    appendLog(`HTTP ${resp.status}\n${text}`);
+                    setStatus(resp.ok ? 'ready' : 'error', resp.ok ? '✅ 连接成功' : `❌ HTTP ${resp.status}`);
                 } else {
-                    // OpenAI / NVIDIA: GET /models
-                    url = baseUrl.replace(/\/+$/, '') + '/models';
-                    headers = { 'Authorization': `Bearer ${apiKey}` };
-                    appendLog(`测试连接: GET ${url}`);
-                    const resp = await fetch(url, { headers });
-                    appendLog(`状态: ${resp.status}`);
+                    const url = baseUrl.replace(/\/+$/, '') + '/models';
+                    appendLog(`GET ${url}`);
+                    const resp = await apiFetch(url, { headers: { 'Authorization': `Bearer ${apiKey}` } });
+                    const text = await resp.text();
+                    appendLog(`HTTP ${resp.status}`);
                     if (resp.ok) {
-                        const data = await resp.json();
-                        const models = (data.data || []).map(m => m.id).slice(0, 30);
-                        appendLog(`可用模型 (前30): \n${models.join('\n')}`);
-                        setStatus('ready', `✅ 连接成功，${data.data?.length || 0} 个模型`);
+                        try {
+                            const data = JSON.parse(text);
+                            const models = (data.data || []).map(m => m.id).slice(0, 30);
+                            appendLog(`可用模型(前30):\n${models.join('\n')}`);
+                            setStatus('ready', `✅ ${data.data?.length || 0} 个模型`);
+                        } catch {
+                            appendLog(`响应:\n${text.substring(0, 1000)}`);
+                            setStatus('ready', '✅ 连接成功（非标准格式）');
+                        }
                     } else {
-                        const text = await resp.text();
-                        appendLog(`错误: ${text}`);
+                        appendLog(`错误:\n${text.substring(0, 1000)}`);
                         setStatus('error', `❌ HTTP ${resp.status}`);
                     }
                 }
             } catch (err) {
-                appendLog(`连接失败: ${err.message}`);
+                appendLog(`❌ ${err.message}`);
                 setStatus('error', '❌ 连接失败');
             }
         }
 
-        // ==================== 发送消息主逻辑 ====================
+        // ============ 发送消息主逻辑 ============
         async function sendMessage() {
             if (isLoading) {
-                if (currentController) {
-                    currentController.abort();
-                    currentController = null;
-                }
+                if (currentController) { currentController.abort(); currentController = null; }
                 isLoading = false;
                 const btn = document.getElementById('sendBtn');
-                btn.textContent = '发送';
-                btn.classList.remove('btn-stop');
+                btn.textContent = '发送'; btn.classList.remove('btn-stop');
                 setStatus('ready', '已取消');
                 return;
             }
 
             const apiKey = getApiKey();
             const userInput = document.getElementById('userInput').value.trim();
-
             if (!apiKey) { alert('请填写 API Key'); return; }
             if (!userInput) return;
 
@@ -982,7 +627,6 @@
             const maxTokens = parseInt(document.getElementById('maxTokens').value);
             const stream = document.getElementById('streamToggle').checked;
 
-            // 添加用户消息
             addUserMessage(userInput);
             chatHistory.push({ role: 'user', content: userInput });
             document.getElementById('userInput').value = '';
@@ -990,244 +634,214 @@
 
             isLoading = true;
             const btn = document.getElementById('sendBtn');
-            btn.textContent = '停止';
-            btn.classList.add('btn-stop');
+            btn.textContent = '停止'; btn.classList.add('btn-stop');
             setStatus('loading', '请求中...');
-            clearLog();
+            document.getElementById('debugLog').textContent = '';
 
             currentController = new AbortController();
             const startTime = Date.now();
+            let bubbleId = null;
 
             try {
                 let result;
                 if (currentProvider === 'claude') {
                     result = await sendClaude(baseUrl, apiKey, model, temperature, maxTokens, stream);
                 } else {
-                    // openai 和 nvidia 都用 OpenAI 兼容格式
-                    result = await sendOpenAICompatible(baseUrl, apiKey, model, temperature, maxTokens, stream);
+                    result = await sendOpenAICompat(baseUrl, apiKey, model, temperature, maxTokens, stream);
                 }
-
                 const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
                 if (result) {
                     chatHistory.push({ role: 'assistant', content: result });
-                    appendLog(`✅ 完成，耗时 ${elapsed}s，共 ${result.length} 字符`);
+                    appendLog(`✅ 完成 | ${elapsed}s | ${result.length}字符`);
                 }
                 setStatus('ready', `✅ ${elapsed}s`);
-
             } catch (error) {
                 if (error.name === 'AbortError') {
-                    appendLog('⚠️ 请求已被用户取消');
-                    // 移除正在流式输出的元素中的loading
-                    const liveEl = document.getElementById('ai-content-live');
-                    if (liveEl) {
-                        liveEl.removeAttribute('id');
-                        if (!liveEl.textContent.trim() || liveEl.querySelector('.typing-indicator')) {
-                            liveEl.textContent = '(已取消)';
-                        }
-                    }
+                    appendLog('⚠️ 已取消');
                 } else {
-                    const errMsg = error.message || String(error);
-                    addErrorMessage(errMsg);
-                    appendLog(`❌ 错误: ${errMsg}`);
+                    addErrorMessage(error.message);
+                    appendLog(`❌ ${error.message}`);
                     setStatus('error', '请求失败');
-                    // 移除loading元素
-                    const liveEl = document.getElementById('ai-content-live');
-                    if (liveEl) liveEl.parentElement.parentElement.remove();
                 }
             } finally {
                 isLoading = false;
-                btn.textContent = '发送';
-                btn.classList.remove('btn-stop');
+                btn.textContent = '发送'; btn.classList.remove('btn-stop');
                 currentController = null;
             }
         }
 
-        // ==================== OpenAI 兼容接口 (GPT / NVIDIA) ====================
-        async function sendOpenAICompatible(baseUrl, apiKey, model, temperature, maxTokens, stream) {
+        // ============ OpenAI 兼容 (GPT / NVIDIA) ============
+        async function sendOpenAICompat(baseUrl, apiKey, model, temperature, maxTokens, stream) {
             const url = baseUrl.replace(/\/+$/, '') + '/chat/completions';
+            const body = { model, messages: chatHistory.slice(), temperature, max_tokens: maxTokens, stream };
 
-            const body = {
-                model: model,
-                messages: chatHistory.slice(), // 副本
-                temperature: temperature,
-                max_tokens: maxTokens,
-                stream: stream
-            };
-
-            appendLog(`→ POST ${url}`);
-            appendLog(`模型: ${model} | 流式: ${stream} | temp: ${temperature} | max_tokens: ${maxTokens}`);
+            appendLog(`→ POST ${url}\n模型: ${model} | stream: ${stream}`);
             appendLog(`请求体:\n${JSON.stringify(body, null, 2)}`);
 
-            const response = await fetch(url, {
+            const fetchOpts = {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
                 body: JSON.stringify(body),
                 signal: currentController.signal
-            });
+            };
 
+            const response = await apiFetch(url, fetchOpts);
             appendLog(`← HTTP ${response.status} ${response.statusText}`);
+            appendLog(`Content-Type: ${response.headers.get('content-type') || '(无)'}`);
 
             if (!response.ok) {
-                let errText;
-                try { errText = await response.text(); } catch { errText = response.statusText; }
+                let errText = '';
+                try { errText = await response.text(); } catch {}
                 appendLog(`错误响应:\n${errText}`);
-                throw new Error(`HTTP ${response.status}: ${errText}`);
+                throw new Error(`HTTP ${response.status}: ${errText || response.statusText}`);
             }
 
-            if (stream) {
-                return await handleOpenAIStream(response);
-            } else {
-                return await handleOpenAINonStream(response);
+            // 读取完整响应文本，然后判断处理方式
+            // 这样可以避免流式解析中的各种兼容性问题
+            if (!stream) {
+                return await parseNonStreamResponse(response);
             }
+
+            // 流式：尝试读取
+            const contentType = response.headers.get('content-type') || '';
+
+            // 有些中转站 stream=true 但返回 JSON
+            if (contentType.includes('application/json')) {
+                appendLog('⚠️ 服务端返回JSON而非流，回退非流式解析');
+                return await parseNonStreamResponse(response);
+            }
+
+            return await parseStreamResponseOpenAI(response);
         }
 
-        async function handleOpenAINonStream(response) {
-            const text = await response.text();
-            appendLog(`完整响应:\n${text}`);
+        async function parseNonStreamResponse(response) {
+            const raw = await response.text();
+            appendLog(`响应 (${raw.length}字):\n${raw.substring(0, 3000)}`);
 
             let data;
-            try {
-                data = JSON.parse(text);
-            } catch {
-                throw new Error(`无法解析 JSON 响应: ${text.substring(0, 500)}`);
+            try { data = JSON.parse(raw); } catch { throw new Error(`无法解析JSON:\n${raw.substring(0, 500)}`); }
+
+            let content = '';
+            // OpenAI 格式
+            if (data.choices && data.choices.length > 0) {
+                content = data.choices[0].message?.content || data.choices[0].text || '';
+            }
+            // Claude 格式
+            if (!content && data.content && Array.isArray(data.content)) {
+                content = data.content.map(b => b.text || '').join('');
             }
 
-            const content = data.choices?.[0]?.message?.content
-                || data.choices?.[0]?.text
-                || '';
-
-            if (!content) {
-                appendLog(`⚠️ 响应中未找到内容，完整结构: ${JSON.stringify(data, null, 2)}`);
-            }
-
-            const el = addAIMessage();
-            const meta = `模型: ${data.model || 'N/A'} | tokens: ${data.usage?.total_tokens || 'N/A'}`;
-            finalizeAIContent(el, content, meta);
+            const bubbleId = createAIBubble();
+            const meta = `模型: ${data.model || 'N/A'} | tokens: ${JSON.stringify(data.usage || {})}`;
+            finalizeBubble(bubbleId, content, meta);
             return content;
         }
 
-        async function handleOpenAIStream(response) {
-            const el = addAIMessage();
+        async function parseStreamResponseOpenAI(response) {
+            const bubbleId = createAIBubble();
             let fullContent = '';
 
-            // 尝试用 reader 逐块读取
-            const contentType = response.headers.get('content-type') || '';
-            appendLog(`Content-Type: ${contentType}`);
-
-            // 某些中转站即使 stream=true 也返回非流式JSON
-            if (contentType.includes('application/json')) {
-                appendLog('⚠️ 服务端返回 JSON（非流式），改用非流式解析');
-                const text = await response.text();
-                appendLog(`响应:\n${text}`);
-                let data;
-                try { data = JSON.parse(text); } catch { throw new Error(`JSON解析失败: ${text.substring(0, 500)}`); }
-                const content = data.choices?.[0]?.message?.content || data.choices?.[0]?.text || '';
-                const meta = `模型: ${data.model || 'N/A'} | tokens: ${data.usage?.total_tokens || 'N/A'}`;
-                finalizeAIContent(el, content, meta);
-                return content;
-            }
-
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder('utf-8');
-            let buffer = '';
-
             try {
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
+                // 尝试用 ReadableStream
+                if (response.body && typeof response.body.getReader === 'function') {
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder('utf-8');
+                    let buffer = '';
 
-                    buffer += decoder.decode(value, { stream: true });
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
 
-                    // 按行分割
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop() || ''; // 保留最后不完整的一行
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop() || '';
 
-                    for (const line of lines) {
-                        const trimmed = line.trim();
-                        if (!trimmed) continue;
-
-                        // 跳过 SSE event 行
-                        if (trimmed.startsWith('event:')) continue;
-                        if (trimmed.startsWith(':')) continue; // SSE comment
-
-                        if (!trimmed.startsWith('data:')) continue;
-
-                        const dataStr = trimmed.slice(5).trim();
-                        if (dataStr === '[DONE]') {
-                            appendLog('收到 [DONE]');
-                            continue;
-                        }
-
-                        try {
-                            const json = JSON.parse(dataStr);
-                            // OpenAI 格式
-                            const delta = json.choices?.[0]?.delta?.content
-                                || json.choices?.[0]?.delta?.text
-                                || json.choices?.[0]?.text
-                                || '';
-                            if (delta) {
-                                fullContent += delta;
-                                updateAIContent(el, fullContent);
+                        for (const line of lines) {
+                            const content = extractSSEContent(line);
+                            if (content) {
+                                fullContent += content;
+                                updateBubble(bubbleId, fullContent);
                             }
-                        } catch (e) {
-                            appendLog(`解析 SSE 数据块失败: ${dataStr.substring(0, 200)}`);
+                        }
+                    }
+
+                    // 处理剩余buffer
+                    if (buffer.trim()) {
+                        const content = extractSSEContent(buffer);
+                        if (content) fullContent += content;
+                    }
+                } else {
+                    // 降级：读取完整文本再解析
+                    appendLog('⚠️ ReadableStream 不可用，读取完整响应');
+                    const raw = await response.text();
+                    appendLog(`响应 (${raw.length}字):\n${raw.substring(0, 2000)}`);
+
+                    // 尝试作为JSON解析
+                    try {
+                        const data = JSON.parse(raw);
+                        fullContent = data.choices?.[0]?.message?.content || data.choices?.[0]?.text || '';
+                    } catch {
+                        // 作为SSE文本逐行解析
+                        const lines = raw.split('\n');
+                        for (const line of lines) {
+                            const content = extractSSEContent(line);
+                            if (content) fullContent += content;
                         }
                     }
                 }
-            } finally {
-                reader.releaseLock();
-            }
-
-            // 处理 buffer 中剩余数据
-            if (buffer.trim()) {
-                const trimmed = buffer.trim();
-                if (trimmed.startsWith('data:')) {
-                    const dataStr = trimmed.slice(5).trim();
-                    if (dataStr && dataStr !== '[DONE]') {
-                        try {
-                            const json = JSON.parse(dataStr);
-                            const delta = json.choices?.[0]?.delta?.content || '';
-                            if (delta) {
-                                fullContent += delta;
-                            }
-                        } catch {}
-                    }
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    finalizeBubble(bubbleId, fullContent || '(已取消)', null);
+                    throw err;
                 }
+                appendLog(`流式读取异常: ${err.message}，尝试回退`);
+                // 如果流式读取失败但已有部分内容
             }
 
-            finalizeAIContent(el, fullContent, null);
+            finalizeBubble(bubbleId, fullContent, null);
             return fullContent;
         }
 
-        // ==================== Claude 接口 ====================
+        // 从 SSE 行中提取内容（兼容各种格式）
+        function extractSSEContent(line) {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith('event:') || trimmed.startsWith(':')) return null;
+            if (!trimmed.startsWith('data:')) return null;
+
+            const dataStr = trimmed.substring(5).trim();
+            if (dataStr === '[DONE]' || dataStr === '') return null;
+
+            try {
+                const json = JSON.parse(dataStr);
+
+                // OpenAI 格式
+                if (json.choices && json.choices[0]) {
+                    const choice = json.choices[0];
+                    return choice.delta?.content || choice.delta?.text || choice.text || '';
+                }
+
+                // Claude SSE 格式
+                if (json.type === 'content_block_delta') {
+                    return json.delta?.text || '';
+                }
+
+                return '';
+            } catch {
+                return null;
+            }
+        }
+
+        // ============ Claude 接口 ============
         async function sendClaude(baseUrl, apiKey, model, temperature, maxTokens, stream) {
             const url = baseUrl.replace(/\/+$/, '') + '/v1/messages';
+            const messages = chatHistory.map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }));
+            const body = { model, max_tokens: maxTokens, messages, stream };
+            if (temperature != null) body.temperature = temperature;
 
-            // Claude 消息格式：不支持 system 在 messages 中，需要提取
-            const claudeMessages = chatHistory.map(m => ({
-                role: m.role === 'assistant' ? 'assistant' : 'user',
-                content: m.content
-            }));
-
-            const body = {
-                model: model,
-                max_tokens: maxTokens,
-                messages: claudeMessages,
-                stream: stream
-            };
-
-            if (temperature !== undefined && temperature !== null) {
-                body.temperature = temperature;
-            }
-
-            appendLog(`→ POST ${url}`);
-            appendLog(`模型: ${model} | 流式: ${stream} | temp: ${temperature} | max_tokens: ${maxTokens}`);
+            appendLog(`→ POST ${url}\n模型: ${model} | stream: ${stream}`);
             appendLog(`请求体:\n${JSON.stringify(body, null, 2)}`);
 
-            const response = await fetch(url, {
+            const response = await apiFetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1242,123 +856,89 @@
             appendLog(`← HTTP ${response.status} ${response.statusText}`);
 
             if (!response.ok) {
-                let errText;
-                try { errText = await response.text(); } catch { errText = response.statusText; }
-                appendLog(`错误响应:\n${errText}`);
-                throw new Error(`HTTP ${response.status}: ${errText}`);
+                let errText = '';
+                try { errText = await response.text(); } catch {}
+                appendLog(`错误:\n${errText}`);
+                throw new Error(`HTTP ${response.status}: ${errText || response.statusText}`);
             }
 
-            if (stream) {
-                return await handleClaudeStream(response);
-            } else {
-                return await handleClaudeNonStream(response);
+            const contentType = response.headers.get('content-type') || '';
+            if (!stream || contentType.includes('application/json')) {
+                return await parseClaudeNonStream(response);
             }
+            return await parseClaudeStream(response);
         }
 
-        async function handleClaudeNonStream(response) {
-            const text = await response.text();
-            appendLog(`完整响应:\n${text}`);
+        async function parseClaudeNonStream(response) {
+            const raw = await response.text();
+            appendLog(`响应:\n${raw.substring(0, 3000)}`);
 
             let data;
-            try {
-                data = JSON.parse(text);
-            } catch {
-                throw new Error(`无法解析 JSON: ${text.substring(0, 500)}`);
-            }
+            try { data = JSON.parse(raw); } catch { throw new Error(`JSON解析失败:\n${raw.substring(0, 500)}`); }
 
-            // Claude 原生格式
             let content = '';
             if (data.content && Array.isArray(data.content)) {
                 content = data.content.map(b => b.text || '').join('');
             }
-            // 某些中转站可能转成 OpenAI 格式
             if (!content && data.choices) {
                 content = data.choices[0]?.message?.content || '';
             }
 
-            const el = addAIMessage();
-            const meta = `模型: ${data.model || 'N/A'} | input: ${data.usage?.input_tokens || 'N/A'} | output: ${data.usage?.output_tokens || 'N/A'}`;
-            finalizeAIContent(el, content, meta);
+            const bubbleId = createAIBubble();
+            const meta = `模型: ${data.model || 'N/A'} | tokens: ${JSON.stringify(data.usage || {})}`;
+            finalizeBubble(bubbleId, content, meta);
             return content;
         }
 
-        async function handleClaudeStream(response) {
-            const el = addAIMessage();
+        async function parseClaudeStream(response) {
+            const bubbleId = createAIBubble();
             let fullContent = '';
-            const contentType = response.headers.get('content-type') || '';
-            appendLog(`Content-Type: ${contentType}`);
-
-            // 某些中转站可能返回非流式
-            if (contentType.includes('application/json') && !contentType.includes('stream')) {
-                appendLog('⚠️ 服务端返回 JSON（非流式），改用非流式解析');
-                const text = await response.text();
-                appendLog(`响应:\n${text}`);
-                let data;
-                try { data = JSON.parse(text); } catch { throw new Error(`JSON解析失败: ${text.substring(0, 500)}`); }
-                let content = '';
-                if (data.content && Array.isArray(data.content)) {
-                    content = data.content.map(b => b.text || '').join('');
-                }
-                if (!content && data.choices) {
-                    content = data.choices[0]?.message?.content || '';
-                }
-                finalizeAIContent(el, content, null);
-                return content;
-            }
-
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder('utf-8');
-            let buffer = '';
 
             try {
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
+                if (response.body && typeof response.body.getReader === 'function') {
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder('utf-8');
+                    let buffer = '';
 
-                    buffer += decoder.decode(value, { stream: true });
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop() || '';
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
 
-                    for (const line of lines) {
-                        const trimmed = line.trim();
-                        if (!trimmed) continue;
-                        if (trimmed.startsWith('event:')) continue;
-                        if (trimmed.startsWith(':')) continue;
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop() || '';
 
-                        if (!trimmed.startsWith('data:')) continue;
-
-                        const dataStr = trimmed.slice(5).trim();
-                        if (dataStr === '[DONE]') continue;
-
-                        try {
-                            const json = JSON.parse(dataStr);
-
-                            // Claude SSE 格式
-                            if (json.type === 'content_block_delta') {
-                                const delta = json.delta?.text || '';
-                                if (delta) {
-                                    fullContent += delta;
-                                    updateAIContent(el, fullContent);
-                                }
+                        for (const line of lines) {
+                            const content = extractSSEContent(line);
+                            if (content) {
+                                fullContent += content;
+                                updateBubble(bubbleId, fullContent);
                             }
-                            // 某些中转站转为OpenAI格式
-                            else if (json.choices) {
-                                const delta = json.choices[0]?.delta?.content || '';
-                                if (delta) {
-                                    fullContent += delta;
-                                    updateAIContent(el, fullContent);
-                                }
-                            }
-                        } catch (e) {
-                            appendLog(`解析SSE失败: ${dataStr.substring(0, 200)}`);
+                        }
+                    }
+                } else {
+                    const raw = await response.text();
+                    appendLog(`响应:\n${raw.substring(0, 2000)}`);
+                    try {
+                        const data = JSON.parse(raw);
+                        if (data.content) fullContent = data.content.map(b => b.text || '').join('');
+                        else if (data.choices) fullContent = data.choices[0]?.message?.content || '';
+                    } catch {
+                        const lines = raw.split('\n');
+                        for (const line of lines) {
+                            const c = extractSSEContent(line);
+                            if (c) fullContent += c;
                         }
                     }
                 }
-            } finally {
-                reader.releaseLock();
+            } catch (err) {
+                if (err.name === 'AbortError') {
+                    finalizeBubble(bubbleId, fullContent || '(已取消)', null);
+                    throw err;
+                }
             }
 
-            finalizeAIContent(el, fullContent, null);
+            finalizeBubble(bubbleId, fullContent, null);
             return fullContent;
         }
     </script>
