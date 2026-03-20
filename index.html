@@ -8,7 +8,6 @@
     <!-- 引入外部库 -->
     <script src="https://unpkg.com/3d-force-graph"></script>
     <script src="https://unpkg.com/three"></script>
-    <!-- 引入 Markdown 解析库 -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
@@ -17,7 +16,6 @@
         /* 背景图片层 */
         #bg-image {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            /* 重点：此路径指向 GitHub 仓库中的 assets/bg.jpg */
             background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), 
                         url('./assets/bg.jpg'); 
             background-size: cover; background-position: center; z-index: -1;
@@ -26,19 +24,28 @@
         /* 顶部导航栏 */
         nav {
             position: fixed; top: 0; width: 100%; height: 60px;
-            background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(15px);
             display: flex; justify-content: center; align-items: center;
             z-index: 100; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         nav a {
-            color: #fff; text-decoration: none; margin: 0 15px;
-            font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;
+            color: #fff; text-decoration: none; margin: 0 12px;
+            font-size: 15px; font-weight: bold; cursor: pointer; transition: 0.3s;
         }
 
-        nav a:hover { color: #4facfe; text-shadow: 0 0 10px #4facfe; }
+        /* APL 测试按钮特别样式 */
+        .btn-apl {
+            color: #ffcc00 !important;
+            border: 1px solid #ffcc00;
+            padding: 5px 12px;
+            border-radius: 4px;
+            margin-right: 20px !important;
+        }
+        .btn-apl:hover { background: #ffcc00; color: #000 !important; }
 
-        /* 底部版权声明 */
+        nav a:hover:not(.btn-apl) { color: #4facfe; text-shadow: 0 0 10px #4facfe; }
+
         footer {
             position: fixed; bottom: 0; width: 100%; height: 40px;
             background: rgba(0, 0, 0, 0.5); color: #aaa;
@@ -46,19 +53,16 @@
             font-size: 13px; z-index: 100;
         }
 
-        /* Markdown 详情弹窗 */
         #info-panel {
             position: fixed; right: 20px; top: 80px; width: 320px; max-height: 70vh;
-            background: rgba(20, 20, 20, 0.9); border: 1px solid #4facfe;
+            background: rgba(20, 20, 20, 0.95); border: 1px solid #4facfe;
             border-radius: 12px; padding: 20px; color: white;
             display: none; z-index: 101; overflow-y: auto;
-            box-shadow: 0 0 20px rgba(79, 172, 254, 0.3);
+            box-shadow: 0 0 25px rgba(0,0,0,0.5);
         }
 
-        /* Markdown 内部样式微调 */
-        #markdown-content h1, #markdown-content h2 { color: #4facfe; margin-top: 5px; }
-        #markdown-content code { background: #333; padding: 2px 4px; border-radius: 4px; }
-        #markdown-content ul { padding-left: 20px; }
+        #markdown-content h1 { color: #4facfe; font-size: 1.4rem; }
+        #markdown-content code { background: #333; padding: 2px 4px; }
 
         #3d-graph { width: 100vw; height: 100vh; }
     </style>
@@ -68,13 +72,16 @@
     <div id="bg-image"></div>
 
     <nav>
+        <!-- 新增的 APL 测试按钮 -->
+        <a href="1.html" class="btn-apl">APL 测试</a>
+        
         <a onclick="filterByGroup('语文')">语文</a>
         <a onclick="filterByGroup('数学')">数学</a>
         <a onclick="filterByGroup('英语')">英语</a>
         <a onclick="filterByGroup('政治')">政治</a>
         <a onclick="filterByGroup('物理')">物理</a>
         <a onclick="filterByGroup('化学')">化学</a>
-        <a onclick="showAll()" style="color: #888; border-left: 1px solid #444; padding-left: 15px;">全科视图</a>
+        <a onclick="showAll()" style="color: #888; margin-left:20px;">全科视图</a>
     </nav>
 
     <div id="3d-graph"></div>
@@ -82,7 +89,7 @@
     <div id="info-panel">
         <div id="markdown-content"></div>
         <button onclick="document.getElementById('info-panel').style.display='none'" 
-                style="margin-top: 15px; width: 100%; background: #333; color: #fff; border: 0; padding: 8px; cursor: pointer; border-radius: 5px;">
+                style="margin-top: 15px; width: 100%; background: #444; color: #fff; border: 0; padding: 10px; cursor: pointer; border-radius: 5px;">
             关闭概览
         </button>
     </div>
@@ -93,42 +100,31 @@
         let fullData = { nodes: [], links: [] };
         const Graph = ForceGraph3D()(document.getElementById('3d-graph'));
 
-        // 初始化图谱配置
         Graph.backgroundColor('rgba(0,0,0,0)')
             .nodeLabel('name')
             .nodeAutoColorBy('group')
-            .linkOpacity(0.3)
-            .linkWidth(0.5)
             .onNodeClick(node => {
                 const panel = document.getElementById('info-panel');
-                // 使用 marked 解析存储在节点里的 Markdown 字符串
-                document.getElementById('markdown-content').innerHTML = marked.parse(node.content);
+                document.getElementById('markdown-content').innerHTML = marked.parse(node.content || "暂无详细定义");
                 panel.style.display = 'block';
                 
-                // 镜头跟随
-                const distance = 80;
+                const distance = 100;
                 const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
                 Graph.cameraPosition({ x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio }, node, 1200);
             });
 
-        // 加载外部 JSON 数据
         Promise.all([
             fetch('./data/nodes.json').then(r => r.json()),
             fetch('./data/links.json').then(r => r.json())
         ]).then(([nodes, links]) => {
             fullData = { nodes, links };
             Graph.graphData(fullData);
-        }).catch(err => {
-            console.error("加载失败，请检查文件路径:", err);
-            alert("数据文件不存在或路径错误，请确保 data/nodes.json 存在");
         });
 
         function filterByGroup(groupName) {
             const nodes = fullData.nodes.filter(n => n.group === groupName);
             const nodeIds = new Set(nodes.map(n => n.id));
-            const links = fullData.links.filter(l => 
-                nodeIds.has(l.source.id || l.source) && nodeIds.has(l.target.id || l.target)
-            );
+            const links = fullData.links.filter(l => nodeIds.has(l.source.id || l.source) && nodeIds.has(l.target.id || l.target));
             Graph.graphData({ nodes, links });
         }
 
