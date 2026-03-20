@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 中转站测试工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0f0f23;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            padding: 30px 0 10px;
+            font-size: 28px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        /* 配置区域 */
+        .config-panel {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid #2a2a4a;
+        }
+
+        .config-panel h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #a0a0cc;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .config-panel h2::before {
+            content: '⚙️';
+        }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #999;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            background: #0f0f23;
+            border: 1px solid #333366;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #555;
+        }
+
+        /* Provider 切换 */
+        .provider-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .provider-tab {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #2a2a4a;
+            border-radius: 12px;
+            background: #0f0f23;
+            color: #888;
+            cursor: pointer;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .provider-tab:hover {
+            border-color: #444;
+        }
+
+        .provider-tab.active-openai {
+            border-color: #10a37f;
+            background: rgba(16, 163, 127, 0.1);
+            color: #10a37f;
+        }
+
+        .provider-tab.active-claude {
+            border-color: #d97706;
+            background: rgba(217, 119, 6, 0.1);
+            color: #d97706;
+        }
+
+        /* 聊天区域 */
+        .chat-panel {
+            background: #1a1a2e;
+            border-radius: 16px;
+            border: 1px solid #2a2a4a;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid #2a2a4a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h2 {
+            font-size: 18px;
+            color: #a0a0cc;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-ready {
+            background: rgba(16, 163, 127, 0.15);
+            color: #10a37f;
+        }
+
+        .status-error {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+
+        .status-loading {
+            background: rgba(234, 179, 8, 0.15);
+            color: #eab308;
+        }
+
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px 24px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 3px;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .message-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .avatar-user {
+            background: #667eea;
+            color: white;
+        }
+
+        .avatar-ai {
+            background: #10a37f;
+            color: white;
+        }
+
+        .avatar-ai.claude {
+            background: #d97706;
+        }
+
+        .message-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #aaa;
+        }
+
+        .message-content {
+            margin-left: 36px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .message-user .message-content {
+            background: #252547;
+            color: #d0d0f0;
+        }
+
+        .message-ai .message-content {
+            background: #162016;
+            color: #c0e0c0;
+            border: 1px solid #1a3a1a;
+        }
+
+        .message-ai.claude .message-content {
+            background: #2a1f10;
+            color: #e0d0b0;
+            border: 1px solid #3a2a1a;
+        }
+
+        .message-error .message-content {
+            background: #2a1015;
+            color: #f0a0a0;
+            border: 1px solid #3a1520;
+        }
+
+        .empty-chat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #555;
+        }
+
+        .empty-chat .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-chat p {
+            font-size: 14px;
+        }
+
+        /* 输入区域 */
+        .chat-input-area {
+            padding: 16px 24px;
+            border-top: 1px solid #2a2a4a;
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .chat-input-area textarea {
+            flex: 1;
+            padding: 12px 16px;
+            background: #0f0f23;
+            border: 1px solid #333366;
+            border-radius: 12px;
+            color: #e0e0e0;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            min-height: 48px;
+            max-height: 150px;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input-area textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .chat-input-area textarea::placeholder {
+            color: #555;
+        }
+
+        .btn-send {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .btn-send:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-clear {
+            padding: 12px 16px;
+            background: #2a2a4a;
+            color: #aaa;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-clear:hover {
+            background: #3a3a5a;
+            color: #ddd;
+        }
+
+        /* 快速测试按钮 */
+        .quick-tests {
+            display: flex;
+            gap: 8px;
+            padding: 0 24px 12px;
+            flex-wrap: wrap;
+        }
+
+        .quick-test-btn {
+            padding: 6px 14px;
+            background: #252547;
+            border: 1px solid #333366;
+            border-radius: 20px;
+            color: #9999cc;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-test-btn:hover {
+            background: #333366;
+            color: #ccccff;
+        }
+
+        /* 加载动画 */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 8px 0;
+            margin-left: 36px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* 信息面板 */
+        .info-panel {
+            margin-top: 20px;
+            padding: 16px 20px;
+            background: #1a1a2e;
+            border-radius: 12px;
+            border: 1px solid #2a2a4a;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .info-panel summary {
+            cursor: pointer;
+            color: #888;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .info-panel pre {
+            background: #0f0f23;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        /* 模型参数 */
+        .params-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .param-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .param-item input[type="range"] {
+            width: 80px;
+            accent-color: #667eea;
+        }
+
+        .param-item input[type="number"] {
+            width: 70px;
+            padding: 4px 8px;
+            background: #0f0f23;
+            border: 1px solid #333366;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 12px;
+        }
+
+        /* 流式输出开关 */
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .toggle-switch input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 36px;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch input[type="checkbox"]::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked {
+            background: #667eea;
+        }
+
+        .toggle-switch input[type="checkbox"]:checked::after {
+            transform: translateX(16px);
+        }
+
+        .options-row {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔌 API 中转站测试工具</h1>
+        <p class="subtitle">测试你的 GPT / Claude 中转 API 是否可用</p>
+
+        <!-- 配置面板 -->
+        <div class="config-panel">
+            <h2>连接配置</h2>
+            
+            <!-- Provider 切换 -->
+            <div class="provider-tabs">
+                <div class="provider-tab active-openai" id="tab-openai" onclick="switchProvider('openai')">
+                    🟢 OpenAI (GPT)
+                </div>
+                <div class="provider-tab" id="tab-claude" onclick="switchProvider('claude')">
+                    🟠 Anthropic (Claude)
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                    <label>API Base URL（中转站地址）</label>
+                    <input type="text" id="baseUrl" placeholder="例如: https://api.example.com/v1">
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label>API Key</label>
+                    <input type="password" id="apiKey" placeholder="输入你的 API Key">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>模型</label>
+                    <select id="model">
+                        <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+                        <option value="gpt-4">gpt-4</option>
+                        <option value="gpt-4-turbo">gpt-4-turbo</option>
+                        <option value="gpt-4o">gpt-4o</option>
+                        <option value="gpt-4o-mini">gpt-4o-mini</option>
+                        <option value="gpt-4.1">gpt-4.1</option>
+                        <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+                        <option value="gpt-4.1-nano">gpt-4.1-nano</option>
+                        <option value="o1">o1</option>
+                        <option value="o1-mini">o1-mini</option>
+                        <option value="o1-preview">o1-preview</option>
+                        <option value="o3-mini">o3-mini</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>自定义模型名（可选）</label>
+                    <input type="text" id="customModel" placeholder="留空则使用左侧选择">
+                </div>
+            </div>
+
+            <div class="options-row">
+                <div class="toggle-switch">
+                    <input type="checkbox" id="streamToggle" checked>
+                    <label for="streamToggle">流式输出</label>
+                </div>
+                <div class="param-item">
+                    <label>Temperature:</label>
+                    <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
+                    <span id="tempValue">0.7</span>
+                </div>
+                <div class="param-item">
+                    <label>Max Tokens:</label>
+                    <input type="number" id="maxTokens" value="2048" min="1" max="128000">
+                </div>
+            </div>
+        </div>
+
+        <!-- 聊天面板 -->
+        <div class="chat-panel">
+            <div class="chat-header">
+                <h2 id="chatTitle">💬 对话测试</h2>
+                <span class="status-badge status-ready" id="statusBadge">就绪</span>
+            </div>
+
+            <div class="quick-tests">
+                <button class="quick-test-btn" onclick="quickTest('你好，请用一句话介绍你自己。')">👋 打招呼</button>
+                <button class="quick-test-btn" onclick="quickTest('1+1等于多少？')">🔢 简单数学</button>
+                <button class="quick-test-btn" onclick="quickTest('用Python写一个快速排序。')">💻 写代码</button>
+                <button class="quick-test-btn" onclick="quickTest('请用中文写一首关于春天的五言绝句。')">📝 写诗</button>
+                <button class="quick-test-btn" onclick="quickTest('What model are you? Please tell me your exact model name and version.')">🤖 识别模型</button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="empty-chat">
+                    <div class="icon">🚀</div>
+                    <p>填写配置后发送消息开始测试</p>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <textarea id="userInput" placeholder="输入你的问题... (Ctrl+Enter 发送)" rows="1" oninput="autoResize(this)"></textarea>
+                <button class="btn-clear" onclick="clearChat()">清空</button>
+                <button class="btn-send" id="sendBtn" onclick="sendMessage()">发送</button>
+            </div>
+        </div>
+
+        <!-- 调试信息 -->
+        <div class="info-panel">
+            <details>
+                <summary>📋 调试日志（点击展开）</summary>
+                <pre id="debugLog">等待请求...</pre>
+            </details>
+        </div>
+    </div>
+
+    <script>
+        let currentProvider = 'openai';
+        let chatHistory = [];
+        let isLoading = false;
+        let currentController = null;
+
+        // 默认URL配置
+        const defaultUrls = {
+            openai: 'https://api.openai.com/v1',
+            claude: 'https://api.anthropic.com'
+        };
+
+        const openaiModels = `
+            <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+            <option value="gpt-4">gpt-4</option>
+            <option value="gpt-4-turbo">gpt-4-turbo</option>
+            <option value="gpt-4o">gpt-4o</option>
+            <option value="gpt-4o-mini">gpt-4o-mini</option>
+            <option value="gpt-4.1">gpt-4.1</option>
+            <option value="gpt-4.1-mini">gpt-4.1-mini</option>
+            <option value="gpt-4.1-nano">gpt-4.1-nano</option>
+            <option value="o1">o1</option>
+            <option value="o1-mini">o1-mini</option>
+            <option value="o1-preview">o1-preview</option>
+            <option value="o3-mini">o3-mini</option>
+        `;
+
+        const claudeModels = `
+            <option value="claude-3-5-sonnet-20241022">claude-3.5-sonnet</option>
+            <option value="claude-3-5-haiku-20241022">claude-3.5-haiku</option>
+            <option value="claude-3-opus-20240229">claude-3-opus</option>
+            <option value="claude-3-sonnet-20240229">claude-3-sonnet</option>
+            <option value="claude-3-haiku-20240307">claude-3-haiku</option>
+            <option value="claude-sonnet-4-20250514">claude-sonnet-4</option>
+            <option value="claude-opus-4-20250514">claude-opus-4</option>
+        `;
+
+        function switchProvider(provider) {
+            currentProvider = provider;
+            
+            document.getElementById('tab-openai').className = 'provider-tab' + (provider === 'openai' ? ' active-openai' : '');
+            document.getElementById('tab-claude').className = 'provider-tab' + (provider === 'claude' ? ' active-claude' : '');
+            
+            document.getElementById('model').innerHTML = provider === 'openai' ? openaiModels : claudeModels;
+            document.getElementById('baseUrl').placeholder = provider === 'openai' 
+                ? '例如: https://api.example.com/v1' 
+                : '例如: https://api.example.com';
+        }
+
+        // Temperature 滑块
+        document.getElementById('temperature').addEventListener('input', function() {
+            document.getElementById('tempValue').textContent = this.value;
+        });
+
+        // 自动调整输入框高度
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px';
+        }
+
+        // 快捷键
+        document.getElementById('userInput').addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function setStatus(type, text) {
+            const badge = document.getElementById('statusBadge');
+            badge.className = 'status-badge status-' + type;
+            badge.textContent = text;
+        }
+
+        function appendLog(text) {
+            const log = document.getElementById('debugLog');
+            const timestamp = new Date().toLocaleTimeString();
+            log.textContent += `\n[${timestamp}] ${text}`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function clearChat() {
+            chatHistory = [];
+            document.getElementById('chatMessages').innerHTML = `
+                <div class="empty-chat">
+                    <div class="icon">🚀</div>
+                    <p>填写配置后发送消息开始测试</p>
+                </div>
+            `;
+            document.getElementById('debugLog').textContent = '日志已清空';
+        }
+
+        function addMessage(role, content, isError = false) {
+            const container = document.getElementById('chatMessages');
+            const emptyChat = container.querySelector('.empty-chat');
+            if (emptyChat) emptyChat.remove();
+
+            const isUser = role === 'user';
+            const isClaude = currentProvider === 'claude';
+            const msg = document.createElement('div');
+            msg.className = `message ${isError ? 'message-error' : (isUser ? 'message-user' : 'message-ai')} ${!isUser && isClaude ? 'claude' : ''}`;
+
+            const avatarClass = isUser ? 'avatar-user' : `avatar-ai ${isClaude ? 'claude' : ''}`;
+            const avatarText = isUser ? '你' : (isClaude ? 'C' : 'G');
+            const nameText = isUser ? '你' : (isError ? '错误' : (isClaude ? 'Claude' : 'GPT'));
+
+            msg.innerHTML = `
+                <div class="message-header">
+                    <div class="message-avatar ${avatarClass}">${isError ? '❌' : avatarText}</div>
+                    <span class="message-name">${nameText}</span>
+                </div>
+                <div class="message-content">${escapeHtml(content)}</div>
+            `;
+
+            container.appendChild(msg);
+            container.scrollTop = container.scrollHeight;
+            return msg;
+        }
+
+        function addStreamMessage() {
+            const container = document.getElementById('chatMessages');
+            const emptyChat = container.querySelector('.empty-chat');
+            if (emptyChat) emptyChat.remove();
+
+            const isClaude = currentProvider === 'claude';
+            const msg = document.createElement('div');
+            msg.className = `message message-ai ${isClaude ? 'claude' : ''}`;
+            msg.id = 'streaming-msg';
+
+            const avatarClass = `avatar-ai ${isClaude ? 'claude' : ''}`;
+            const avatarText = isClaude ? 'C' : 'G';
+            const nameText = isClaude ? 'Claude' : 'GPT';
+
+            msg.innerHTML = `
+                <div class="message-header">
+                    <div class="message-avatar ${avatarClass}">${avatarText}</div>
+                    <span class="message-name">${nameText}</span>
+                </div>
+                <div class="message-content" id="streaming-content">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+
+            container.appendChild(msg);
+            container.scrollTop = container.scrollHeight;
+            return msg;
+        }
+
+        function updateStreamContent(text) {
+            const el = document.getElementById('streaming-content');
+            if (el) {
+                el.textContent = text;
+                const container = document.getElementById('chatMessages');
+                container.scrollTop = container.scrollHeight;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function quickTest(question) {
+            document.getElementById('userInput').value = question;
+            autoResize(document.getElementById('userInput'));
+            sendMessage();
+        }
+
+        async function sendMessage() {
+            if (isLoading) {
+                // 如果正在加载则终止
+                if (currentController) {
+                    currentController.abort();
+                    currentController = null;
+                }
+                isLoading = false;
+                document.getElementById('sendBtn').textContent = '发送';
+                setStatus('ready', '已取消');
+                return;
+            }
+
+            const baseUrl = document.getElementById('baseUrl').value.trim();
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const customModel = document.getElementById('customModel').value.trim();
+            const model = customModel || document.getElementById('model').value;
+            const temperature = parseFloat(document.getElementById('temperature').value);
+            const maxTokens = parseInt(document.getElementById('maxTokens').value);
+            const stream = document.getElementById('streamToggle').checked;
+            const userInput = document.getElementById('userInput').value.trim();
+
+            if (!baseUrl) { alert('请填写 API Base URL'); return; }
+            if (!apiKey) { alert('请填写 API Key'); return; }
+            if (!userInput) { return; }
+
+            // 添加用户消息
+            addMessage('user', userInput);
+            chatHistory.push({ role: 'user', content: userInput });
+            document.getElementById('userInput').value = '';
+            autoResize(document.getElementById('userInput'));
+
+            isLoading = true;
+            document.getElementById('sendBtn').textContent = '停止';
+            setStatus('loading', '请求中...');
+
+            currentController = new AbortController();
+
+            try {
+                if (currentProvider === 'openai') {
+                    await sendOpenAI(baseUrl, apiKey, model, temperature, maxTokens, stream);
+                } else {
+                    await sendClaude(baseUrl, apiKey, model, temperature, maxTokens, stream);
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    appendLog('请求已被用户取消');
+                } else {
+                    addMessage('assistant', `请求失败: ${error.message}`, true);
+                    appendLog(`错误: ${error.message}`);
+                    setStatus('error', '请求失败');
+                }
+            } finally {
+                isLoading = false;
+                document.getElementById('sendBtn').textContent = '发送';
+                currentController = null;
+            }
+        }
+
+        async function sendOpenAI(baseUrl, apiKey, model, temperature, maxTokens, stream) {
+            const url = `${baseUrl.replace(/\/+$/, '')}/chat/completions`;
+            
+            const body = {
+                model: model,
+                messages: chatHistory,
+                temperature: temperature,
+                max_tokens: maxTokens,
+                stream: stream
+            };
+
+            appendLog(`请求 OpenAI API: ${url}`);
+            appendLog(`模型: ${model}, 流式: ${stream}`);
+            appendLog(`请求体: ${JSON.stringify(body, null, 2)}`);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify(body),
+                signal: currentController.signal
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                appendLog(`HTTP ${response.status}: ${errText}`);
+                throw new Error(`HTTP ${response.status}: ${errText}`);
+            }
+
+            if (stream) {
+                await handleOpenAIStream(response);
+            } else {
+                const data = await response.json();
+                appendLog(`响应: ${JSON.stringify(data, null, 2)}`);
+                const content = data.choices?.[0]?.message?.content || '(空响应)';
+                addMessage('assistant', content);
+                chatHistory.push({ role: 'assistant', content: content });
+                setStatus('ready', '✅ 成功');
+            }
+        }
+
+        async function handleOpenAIStream(response) {
+            addStreamMessage();
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullContent = '';
+            let buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed || !trimmed.startsWith('data: ')) continue;
+                    
+                    const data = trimmed.slice(6);
+                    if (data === '[DONE]') continue;
+
+                    try {
+                        const json = JSON.parse(data);
+                        const delta = json.choices?.[0]?.delta?.content || '';
+                        if (delta) {
+                            fullContent += delta;
+                            updateStreamContent(fullContent);
+                        }
+                    } catch (e) {
+                        // skip parse errors
+                    }
+                }
+            }
+
+            if (fullContent) {
+                chatHistory.push({ role: 'assistant', content: fullContent });
+                appendLog(`流式响应完成，共 ${fullContent.length} 字符`);
+            }
+            setStatus('ready', '✅ 成功');
+        }
+
+        async function sendClaude(baseUrl, apiKey, model, temperature, maxTokens, stream) {
+            const url = `${baseUrl.replace(/\/+$/, '')}/v1/messages`;
+            
+            // Claude API 格式
+            const claudeMessages = chatHistory.map(m => ({
+                role: m.role === 'assistant' ? 'assistant' : 'user',
+                content: m.content
+            }));
+
+            const body = {
+                model: model,
+                max_tokens: maxTokens,
+                messages: claudeMessages,
+                stream: stream
+            };
+
+            // Claude 不支持 temperature = 0 以外的某些情况，但一般支持
+            if (temperature !== undefined) {
+                body.temperature = temperature;
+            }
+
+            appendLog(`请求 Claude API: ${url}`);
+            appendLog(`模型: ${model}, 流式: ${stream}`);
+            appendLog(`请求体: ${JSON.stringify(body, null, 2)}`);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify(body),
+                signal: currentController.signal
+            });
+
+            if (!response.ok) {
+                const errText = await response.text();
+                appendLog(`HTTP ${response.status}: ${errText}`);
+                throw new Error(`HTTP ${response.status}: ${errText}`);
+            }
+
+            if (stream) {
+                await handleClaudeStream(response);
+            } else {
+                const data = await response.json();
+                appendLog(`响应: ${JSON.stringify(data, null, 2)}`);
+                const content = data.content?.[0]?.text || '(空响应)';
+                addMessage('assistant', content);
+                chatHistory.push({ role: 'assistant', content: content });
+                setStatus('ready', '✅ 成功');
+            }
+        }
+
+        async function handleClaudeStream(response) {
+            addStreamMessage();
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullContent = '';
+            let buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed.startsWith('data: ')) continue;
+
+                    const data = trimmed.slice(6);
+                    try {
+                        const json = JSON.parse(data);
+                        
+                        if (json.type === 'content_block_delta') {
+                            const delta = json.delta?.text || '';
+                            if (delta) {
+                                fullContent += delta;
+                                updateStreamContent(fullContent);
+                            }
+                        }
+                    } catch (e) {
+                        // skip parse errors
+                    }
+                }
+            }
+
+            if (fullContent) {
+                chatHistory.push({ role: 'assistant', content: fullContent });
+                appendLog(`流式响应完成，共 ${fullContent.length} 字符`);
+            }
+            setStatus('ready', '✅ 成功');
+        }
+    </script>
+</body>
+</html>
