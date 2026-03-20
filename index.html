@@ -5,63 +5,60 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2026高考知识点 3D 地图</title>
     
-    <!-- 引入外部库：3D 关系图引擎 -->
+    <!-- 引入外部库 -->
     <script src="https://unpkg.com/3d-force-graph"></script>
     <script src="https://unpkg.com/three"></script>
+    <!-- 引入 Markdown 解析库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
-        body { margin: 0; padding: 0; overflow: hidden; font-family: "Microsoft YaHei", sans-serif; background-color: #000; }
+        body { margin: 0; padding: 0; overflow: hidden; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; background-color: #000; }
 
         /* 背景图片层 */
         #bg-image {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            /* 这里的路径指向你 GitHub 仓库里的图片 */
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            /* 重点：此路径指向 GitHub 仓库中的 assets/bg.jpg */
             background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.8)), 
                         url('./assets/bg.jpg'); 
-            background-size: cover;
-            background-position: center;
-            z-index: -1;
+            background-size: cover; background-position: center; z-index: -1;
         }
 
         /* 顶部导航栏 */
         nav {
-            position: fixed;
-            top: 0; width: 100%; height: 60px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(8px);
+            position: fixed; top: 0; width: 100%; height: 60px;
+            background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(10px);
             display: flex; justify-content: center; align-items: center;
             z-index: 100; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         nav a {
-            color: #eee; text-decoration: none; margin: 0 15px;
-            font-size: 16px; font-weight: 500; cursor: pointer; transition: 0.3s;
+            color: #fff; text-decoration: none; margin: 0 15px;
+            font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;
         }
 
-        nav a:hover { color: #00d2ff; text-shadow: 0 0 10px #00d2ff; }
+        nav a:hover { color: #4facfe; text-shadow: 0 0 10px #4facfe; }
 
         /* 底部版权声明 */
         footer {
             position: fixed; bottom: 0; width: 100%; height: 40px;
-            background: rgba(0, 0, 0, 0.5); color: #888;
+            background: rgba(0, 0, 0, 0.5); color: #aaa;
             display: flex; justify-content: center; align-items: center;
-            font-size: 14px; z-index: 100; letter-spacing: 1px;
+            font-size: 13px; z-index: 100;
         }
 
-        /* 详情弹窗 */
+        /* Markdown 详情弹窗 */
         #info-panel {
-            position: fixed; left: 20px; top: 80px; width: 280px;
-            background: rgba(15, 15, 15, 0.9); border: 1px solid #444;
+            position: fixed; right: 20px; top: 80px; width: 320px; max-height: 70vh;
+            background: rgba(20, 20, 20, 0.9); border: 1px solid #4facfe;
             border-radius: 12px; padding: 20px; color: white;
-            display: none; z-index: 101; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none; z-index: 101; overflow-y: auto;
+            box-shadow: 0 0 20px rgba(79, 172, 254, 0.3);
         }
 
-        #info-panel h2 { margin-top: 0; color: #00d2ff; font-size: 1.2rem; }
-        #info-panel p { line-height: 1.6; color: #ccc; }
+        /* Markdown 内部样式微调 */
+        #markdown-content h1, #markdown-content h2 { color: #4facfe; margin-top: 5px; }
+        #markdown-content code { background: #333; padding: 2px 4px; border-radius: 4px; }
+        #markdown-content ul { padding-left: 20px; }
 
         #3d-graph { width: 100vw; height: 100vh; }
     </style>
@@ -77,17 +74,17 @@
         <a onclick="filterByGroup('政治')">政治</a>
         <a onclick="filterByGroup('物理')">物理</a>
         <a onclick="filterByGroup('化学')">化学</a>
-        <a onclick="showAll()" style="color: #666; font-size: 12px;">显示全部</a>
+        <a onclick="showAll()" style="color: #888; border-left: 1px solid #444; padding-left: 15px;">全科视图</a>
     </nav>
 
     <div id="3d-graph"></div>
 
     <div id="info-panel">
-        <h2 id="node-name"></h2>
-        <hr style="border:0; border-top:1px solid #333;">
-        <p id="node-desc"></p>
+        <div id="markdown-content"></div>
         <button onclick="document.getElementById('info-panel').style.display='none'" 
-                style="background:transparent; border:1px solid #555; color:#888; cursor:pointer; padding:5px 10px; border-radius:4px;">关闭</button>
+                style="margin-top: 15px; width: 100%; background: #333; color: #fff; border: 0; padding: 8px; cursor: pointer; border-radius: 5px;">
+            关闭概览
+        </button>
     </div>
 
     <footer>2026狂客</footer>
@@ -96,51 +93,47 @@
         let fullData = { nodes: [], links: [] };
         const Graph = ForceGraph3D()(document.getElementById('3d-graph'));
 
-        // 初始化图谱设置
-        Graph.backgroundColor('rgba(0,0,0,0)') // 透明背景显示 CSS 背景
+        // 初始化图谱配置
+        Graph.backgroundColor('rgba(0,0,0,0)')
             .nodeLabel('name')
             .nodeAutoColorBy('group')
-            .linkOpacity(0.4)
-            .linkWidth(1)
+            .linkOpacity(0.3)
+            .linkWidth(0.5)
             .onNodeClick(node => {
                 const panel = document.getElementById('info-panel');
-                document.getElementById('node-name').innerText = node.name;
-                document.getElementById('node-desc').innerText = node.desc;
+                // 使用 marked 解析存储在节点里的 Markdown 字符串
+                document.getElementById('markdown-content').innerHTML = marked.parse(node.content);
                 panel.style.display = 'block';
                 
-                // 镜头平滑聚焦
-                const distance = 60;
+                // 镜头跟随
+                const distance = 80;
                 const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
                 Graph.cameraPosition({ x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio }, node, 1200);
             });
 
-        // 异步加载数据文件
+        // 加载外部 JSON 数据
         Promise.all([
             fetch('./data/nodes.json').then(r => r.json()),
             fetch('./data/links.json').then(r => r.json())
         ]).then(([nodes, links]) => {
             fullData = { nodes, links };
             Graph.graphData(fullData);
-        }).catch(err => console.error("数据加载失败，请检查文件路径", err));
+        }).catch(err => {
+            console.error("加载失败，请检查文件路径:", err);
+            alert("数据文件不存在或路径错误，请确保 data/nodes.json 存在");
+        });
 
-        // 过滤功能
         function filterByGroup(groupName) {
-            const filteredNodes = fullData.nodes.filter(n => n.group === groupName);
-            const nodeIds = new Set(filteredNodes.map(n => n.id));
-            const filteredLinks = fullData.links.filter(l => 
+            const nodes = fullData.nodes.filter(n => n.group === groupName);
+            const nodeIds = new Set(nodes.map(n => n.id));
+            const links = fullData.links.filter(l => 
                 nodeIds.has(l.source.id || l.source) && nodeIds.has(l.target.id || l.target)
             );
-            Graph.graphData({ nodes: filteredNodes, links: filteredLinks });
+            Graph.graphData({ nodes, links });
         }
 
-        function showAll() {
-            Graph.graphData(fullData);
-        }
-
-        window.addEventListener('resize', () => {
-            Graph.width(window.innerWidth);
-            Graph.height(window.innerHeight);
-        });
+        function showAll() { Graph.graphData(fullData); }
+        window.addEventListener('resize', () => { Graph.width(window.innerWidth); Graph.height(window.innerHeight); });
     </script>
 </body>
 </html>
