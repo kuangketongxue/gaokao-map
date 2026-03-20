@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高考知识点 3D 思维导图 - 2026狂客</title>
+    
+    <!-- 引入 3D 关系图库 -->
+    <script src="https://unpkg.com/3d-force-graph"></script>
+    <script src="https://unpkg.com/three"></script>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+            /* 在这里编辑背景图片 */
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                        url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        /* 导航栏样式 */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        nav a:hover {
+            color: #4facfe;
+            text-shadow: 0 0 10px #4facfe;
+        }
+
+        /* 底部版权声明 */
+        footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.3);
+            color: rgba(255, 255, 255, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9rem;
+            z-index: 100;
+        }
+
+        /* 详情弹窗 */
+        #node-info {
+            position: fixed;
+            right: 20px;
+            top: 80px;
+            width: 250px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #4facfe;
+            border-radius: 8px;
+            padding: 15px;
+            color: white;
+            display: none;
+            z-index: 101;
+        }
+
+        #3d-graph {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+
+    <nav id="navbar">
+        <a onclick="filterCategory('语文')">语文</a>
+        <a onclick="filterCategory('数学')">数学</a>
+        <a onclick="filterCategory('英语')">英语</a>
+        <a onclick="filterCategory('政治')">政治</a>
+        <a onclick="filterCategory('物理')">物理</a>
+        <a onclick="filterCategory('化学')">化学</a>
+        <a onclick="resetView()" style="font-size: 0.8rem; color: #aaa;">重置视图</a>
+    </nav>
+
+    <div id="3d-graph"></div>
+
+    <div id="node-info">
+        <h3 id="info-title"></h3>
+        <p id="info-content"></p>
+    </div>
+
+    <footer>2026狂客</footer>
+
+    <script>
+        // --- 数据部分 (你可以通过 fetch 读取外部 JSON 文件) ---
+        // 知识点定义 (模拟 Markdown 条目)
+        const gData = {
+            nodes: [
+                { id: '语文-1', group: '语文', name: '文言文常识', desc: '包含常用虚词、实词、特殊句式。' },
+                { id: '数学-1', group: '数学', name: '导数与函数', desc: '研究切线斜率、单调性、极值。' },
+                { id: '数学-2', group: '数学', name: '三角函数', desc: '正弦、余弦定理及其应用。' },
+                { id: '英语-1', group: '英语', name: '定语从句', desc: '关系代词 which, that, who 的用法。' },
+                { id: '政治-1', group: '政治', name: '辩证唯物主义', desc: '物质决定意识，意识具有能动作用。' },
+                { id: '物理-1', group: '物理', name: '牛顿运动定律', desc: '力是改变运动状态的原因。' },
+                { id: '化学-1', group: '化学', name: '元素周期律', desc: '电子层数与核电荷数的关系。' },
+                // 在此处添加更多知识点...
+            ],
+            links: [
+                { source: '数学-1', target: '数学-2' },
+                { source: '物理-1', target: '数学-1' }, // 跨学科联系
+            ]
+        };
+
+        const Graph = ForceGraph3D()
+            (document.getElementById('3d-graph'))
+            .graphData(gData)
+            .nodeLabel('name') // 鼠标悬停显示名称
+            .nodeAutoColorBy('group') // 根据科目自动着色
+            .linkColor(() => '#ffffff')
+            .linkOpacity(0.3)
+            .backgroundColor('rgba(0,0,0,0)') // 透明背景以显示底层 CSS 背景图
+            .onNodeClick(node => {
+                // 点击节点，侧边栏显示详情（这里可以解析你定义的 md 内容）
+                const infoDiv = document.getElementById('node-info');
+                document.getElementById('info-title').innerText = node.name;
+                document.getElementById('info-content').innerText = node.desc;
+                infoDiv.style.display = 'block';
+                
+                // 视角聚焦
+                const distance = 40;
+                const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
+                Graph.cameraPosition(
+                    { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio }, 
+                    node, 
+                    3000
+                );
+            });
+
+        // 导航过滤功能
+        function filterCategory(cat) {
+            const filteredNodes = gData.nodes.filter(n => n.group === cat);
+            const nodeIds = filteredNodes.map(n => n.id);
+            const filteredLinks = gData.links.filter(l => 
+                nodeIds.includes(typeof l.source === 'object' ? l.source.id : l.source)
+            );
+            
+            Graph.graphData({ nodes: filteredNodes, links: filteredLinks });
+        }
+
+        function resetView() {
+            Graph.graphData(gData);
+        }
+
+        // 自适应窗口大小
+        window.addEventListener('resize', function () {
+            Graph.width(window.innerWidth);
+            Graph.height(window.innerHeight);
+        });
+    </script>
+</body>
+</html>
